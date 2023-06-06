@@ -74,7 +74,7 @@ Resources:
 
   UsuariosApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
-    DependsOn: UsuariosApiGatewayUsuariosGet
+    DependsOn: UsuariosApiGatewayUsuariosResource
     Properties:
       RestApiId: !Ref UsuariosApiGateway
       Description: !Ref Environment
