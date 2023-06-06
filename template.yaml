@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Escola de software - Usuários - Api Gateway
+Description: Escola de software - Usuarios - Api Gateway
 Parameters:
   Environment:
     Description: Environment
