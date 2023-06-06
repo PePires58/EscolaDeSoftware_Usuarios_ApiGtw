@@ -1,0 +1,28 @@
+name: Deploy infra - Development
+on:
+  push:
+    branches: [development]
+
+jobs:
+  Deploy-infra:
+    uses: PePires58/ReusableWorkflows/.github/workflows/002_cloudformation_deploy_pipeline.yaml@main
+    with: 
+      stack-name: "dev-escoladesoftware-usuarios-apigateway"
+      parameters-file-path: "infra/dev.parameters.json"
+    secrets:
+      AWS_BUCKET_DEPLOY: ${{ secrets.AWS_BUCKET_DEPLOY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  
+  Pull-request:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    needs: [Deploy-infra]
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Create pull request
+        run: gh pr create -B main -H development --title 'Production deployment' --body 'Pull request to go to production' || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
