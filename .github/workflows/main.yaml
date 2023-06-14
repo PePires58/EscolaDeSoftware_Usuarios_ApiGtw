@@ -4,11 +4,14 @@ on:
     branches: [main]
 
 jobs:
-  Deploy-infra:
-    uses: PePires58/ReusableWorkflows/.github/workflows/002_cloudformation_deploy_pipeline.yaml@main
+
+  Deploy-API-Pipe:
+    uses: PePires58/ReusableWorkflows/.github/workflows/004_apigateway_deploy_full_pipeline.yaml@main
     with: 
       stack-name: "prod-escoladesoftware-usuarios-apigateway"
       parameters-file-path: "infra/prod.parameters.json"
+      api-gateway-name: "Escola de Software - Usuarios - Api Gateway - prod"
+      stage-name: "prod"
     secrets:
       AWS_BUCKET_DEPLOY: ${{ secrets.AWS_BUCKET_DEPLOY }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
