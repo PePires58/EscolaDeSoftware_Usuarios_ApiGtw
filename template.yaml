@@ -52,7 +52,8 @@ Resources:
   UsuariosApiGatewayUsuariosPut:
     Type: AWS::ApiGateway::Method
     Properties:
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaCustomAuthorizer
       ApiKeyRequired: False
       HttpMethod: PUT
       Integration:
@@ -126,5 +127,41 @@ Resources:
               ":",
               !Ref UsuariosApiGateway,
               "/*/PUT/usuarios",
+            ],
+          ]
+
+  #########  Autorizador #########
+  LambdaCustomAuthorizer:
+    Type: 'AWS::ApiGateway::Authorizer'
+    Properties:
+      AuthorizerResultTtlInSeconds: '0'
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-autorizador-lambdaauthorizerfn/invocations"
+      Type: TOKEN
+      IdentitySource: method.request.header.Authorization
+      Name: DefaultLambdaAuthorizer
+      RestApiId: !Ref AutorizadorApiGateway
+
+  InvokeLambdaAuthorizerBasedPolicy:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-autorizador-lambdaauthorizerfn"
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn:
+        Fn::Join:
+          [
+            "",
+            [
+              "arn:",
+              !Ref AWS::Partition,
+              ":execute-api:",
+              !Ref AWS::Region,
+              ":",
+              !Ref AWS::AccountId,
+              ":",
+              !Ref UsuariosApiGateway,
+              "/authorizers/",
+              !Ref LambdaCustomAuthorizer
             ],
           ]
