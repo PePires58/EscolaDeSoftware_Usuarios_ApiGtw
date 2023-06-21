@@ -62,7 +62,7 @@ Resources:
           - StatusCode: 200
           - StatusCode: 400
           - StatusCode: 500
-        TimeoutInMillis: 2000
+        TimeoutInMillis: 3000
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-usuarios-lambdaatualizarusuariofn/invocations"
       MethodResponses:
