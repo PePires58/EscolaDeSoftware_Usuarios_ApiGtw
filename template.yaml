@@ -139,7 +139,7 @@ Resources:
       Type: TOKEN
       IdentitySource: method.request.header.Authorization
       Name: DefaultLambdaAuthorizer
-      RestApiId: !Ref AutorizadorApiGateway
+      RestApiId: !Ref UsuariosApiGateway
 
   InvokeLambdaAuthorizerBasedPolicy:
     Type: AWS::Lambda::Permission
