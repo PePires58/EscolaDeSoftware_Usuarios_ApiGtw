@@ -52,7 +52,8 @@ Resources:
   UsuariosApiGatewayUsuariosPut:
     Type: AWS::ApiGateway::Method
     Properties:
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaCustomAuthorizer
       ApiKeyRequired: False
       HttpMethod: PUT
       Integration:
@@ -61,7 +62,7 @@ Resources:
           - StatusCode: 200
           - StatusCode: 400
           - StatusCode: 500
-        TimeoutInMillis: 2000
+        TimeoutInMillis: 3000
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-usuarios-lambdaatualizarusuariofn/invocations"
       MethodResponses:
@@ -69,6 +70,30 @@ Resources:
         - StatusCode: 400
         - StatusCode: 500
       OperationName: PUT /usuarios
+      ResourceId: !Ref UsuariosApiGatewayUsuariosResource
+      RestApiId: !Ref UsuariosApiGateway
+
+  UsuariosApiGatewayUsuariosGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaCustomAuthorizer
+      ApiKeyRequired: False
+      HttpMethod: GET
+      Integration:
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: 200
+          - StatusCode: 400
+          - StatusCode: 500
+        TimeoutInMillis: 3000
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-usuarios-lambdaconsultausuariofn/invocations"
+      MethodResponses:
+        - StatusCode: 200
+        - StatusCode: 400
+        - StatusCode: 500
+      OperationName: GET /usuarios
       ResourceId: !Ref UsuariosApiGatewayUsuariosResource
       RestApiId: !Ref UsuariosApiGateway
 
@@ -126,5 +151,65 @@ Resources:
               ":",
               !Ref UsuariosApiGateway,
               "/*/PUT/usuarios",
+            ],
+          ]
+
+  UsuariosInvokeLambdaConsultarUsuariosBasedPolicy:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-usuarios-lambdaconsultausuariofn"
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn:
+        Fn::Join:
+          [
+            "",
+            [
+              "arn:",
+              !Ref AWS::Partition,
+              ":execute-api:",
+              !Ref AWS::Region,
+              ":",
+              !Ref AWS::AccountId,
+              ":",
+              !Ref UsuariosApiGateway,
+              "/*/GET/usuarios",
+            ],
+          ]
+
+  #########  Autorizador #########
+  LambdaCustomAuthorizer:
+    Type: 'AWS::ApiGateway::Authorizer'
+    Properties:
+      AuthorizerResultTtlInSeconds: '0'
+      AuthorizerUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-autorizador-lambdaauthorizerfn/invocations"
+      Type: TOKEN
+      IdentitySource: method.request.header.Authorization
+      Name: DefaultLambdaAuthorizer
+      RestApiId: !Ref UsuariosApiGateway
+
+  InvokeLambdaAuthorizerBasedPolicy:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Environment}_escoladesoftware-autorizador-lambdaauthorizerfn"
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn:
+        Fn::Join:
+          [
+            "",
+            [
+              "arn:",
+              !Ref AWS::Partition,
+              ":execute-api:",
+              !Ref AWS::Region,
+              ":",
+              !Ref AWS::AccountId,
+              ":",
+              !Ref UsuariosApiGateway,
+              "/authorizers/",
+              !Ref LambdaCustomAuthorizer
             ],
           ]
